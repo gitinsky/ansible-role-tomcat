@@ -1,0 +1,50 @@
+---
+- name: automatically extract and set the major version
+  set_fact:
+    tomcat_major_version: "{{ tomcat_version | regex_replace('^(.*?)\\.(.*)$', '\\1') }}"
+
+- name: print the major version
+  debug: var=tomcat_major_version
+
+- name: download Tomcat {{ tomcat_major_version }}
+  command: bash -c "cd /root && wget http://apache-mirror.rbc.ru/pub/apache/tomcat/tomcat-{{ tomcat_major_version }}/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz" creates="/root/apache-tomcat-{{ tomcat_version }}.tar.gz"
+
+- name: unpack Tomcat
+  command: bash -c "cd /opt && tar xzf /root/apache-tomcat-{{ tomcat_version }}.tar.gz" creates=/opt/apache-tomcat-{{ tomcat_version }}
+
+- name: make a link to apache-tomcat
+  file: state=link src="/opt/apache-tomcat-{{ tomcat_version }}" dest="/opt/apache-tomcat{{ tomcat_major_version }}"
+
+- name: make a link to tomcat
+  file: state=link src="/opt/apache-tomcat{{ tomcat_major_version }}" dest="/opt/tomcat{{ tomcat_major_version }}"
+
+- name: add tomcat{{ tomcat_major_version }} user
+  user: name="tomcat{{ tomcat_major_version }}" shell=/sbin/nologin
+
+- name: make /opt/tomcat{{ tomcat_major_version }}/logs
+  file: state=directory name="/opt/tomcat{{ tomcat_major_version }}/logs" owner="tomcat{{ tomcat_major_version }}" group="tomcat{{ tomcat_major_version }}" mode=0755
+
+- name: make /opt/tomcat{{ tomcat_major_version }}/temp
+  file: state=directory name="/opt/tomcat{{ tomcat_major_version }}/temp" owner="tomcat{{ tomcat_major_version }}" group="tomcat{{ tomcat_major_version }}" mode=0755
+
+- name: make /opt/tomcat{{ tomcat_major_version }}/work
+  file: state=directory name="/opt/tomcat{{ tomcat_major_version }}/work" owner="tomcat{{ tomcat_major_version }}" group="tomcat{{ tomcat_major_version }}" mode=0755
+
+- name: make /opt/tomcat{{ tomcat_major_version }}/webapps
+  file: state=directory name="/opt/tomcat{{ tomcat_major_version }}/webapps" owner="tomcat{{ tomcat_major_version }}" group="tomcat{{ tomcat_major_version }}" mode=0755
+
+- name: make existing webapps readable to tomcat{{ tomcat_major_version }} user
+  command: bash -c "chown -R tomcat{{ tomcat_major_version }} /opt/tomcat{{ tomcat_major_version }}/webapps"
+
+- name: make config files readable to tomcat{{ tomcat_major_version }} user
+  command: bash -c "chown -R :tomcat{{ tomcat_major_version }} /opt/tomcat{{ tomcat_major_version }}/conf && chmod 640 /opt/tomcat{{ tomcat_major_version }}/conf/*"
+
+- name: make /opt/tomcat{{ tomcat_major_version }}/conf/Catalina
+  file: state=directory name=/opt/tomcat{{ tomcat_major_version }}/conf/Catalina owner=tomcat{{ tomcat_major_version }} group=tomcat{{ tomcat_major_version }} mode=0755
+
+- name: make /opt/tomcat{{ tomcat_major_version }}/conf/Catalina/localhost
+  file: state=directory name=/opt/tomcat{{ tomcat_major_version }}/conf/Catalina/localhost owner=tomcat{{ tomcat_major_version }} group=tomcat{{ tomcat_major_version }} mode=0755
+
+- name: put server.xml
+  template: src=server8.xml dest=/opt/tomcat{{ tomcat_major_version }}/conf/server.xml owner=root group=tomcat{{ tomcat_major_version }} mode=0640
+  when: "tomcat_major_version == '8'"
