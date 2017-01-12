@@ -5,7 +5,7 @@ Documentation=https://tomcat.apache.org
 [Service]
 User=tomcat{{ tomcat_major_version }}
 Group=tomcat{{ tomcat_major_version }}
-ExecStart=/opt/tomcat8/bin/catalina.sh run
+ExecStart=/opt/tomcat{{ tomcat_major_version }}/bin/catalina.sh run
 StandardOutput=journal
 StandardError=journal
 
