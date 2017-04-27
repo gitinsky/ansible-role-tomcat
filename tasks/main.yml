@@ -41,14 +41,16 @@
 
 - name: make /opt/tomcat{{ tomcat_major_version }}/conf/Catalina
   file: state=directory name=/opt/tomcat{{ tomcat_major_version }}/conf/Catalina owner=tomcat{{ tomcat_major_version }} group=tomcat{{ tomcat_major_version }} mode=0755
-  when: "tomcat_major_version == '7'"
 
 - name: make /opt/tomcat{{ tomcat_major_version }}/conf/Catalina/localhost
   file: state=directory name=/opt/tomcat{{ tomcat_major_version }}/conf/Catalina/localhost owner=tomcat{{ tomcat_major_version }} group=tomcat{{ tomcat_major_version }} mode=0755
-  when: "tomcat_major_version == '7'"
 
 - name: put server.xml
   template: src=server8.xml dest=/opt/tomcat{{ tomcat_major_version }}/conf/server.xml owner=root group=tomcat{{ tomcat_major_version }} mode=0640
+  when: "tomcat_major_version == '8'"
+
+- name: put tomcat-users.xml
+  template: src=tomcat-users.xml dest=/opt/tomcat{{ tomcat_major_version }}/conf/tomcat-users.xml owner=root group=tomcat{{ tomcat_major_version }} mode=0640
   when: "tomcat_major_version == '8'"
 
 - name: put systemd unit file to its destination
